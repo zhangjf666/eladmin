@@ -43,6 +43,7 @@ import java.util.concurrent.*;
  * @date 2019-01-07
  */
 @Async
+@SuppressWarnings({"unchecked","all"})
 public class ExecutionJob extends QuartzJobBean {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -51,7 +52,6 @@ public class ExecutionJob extends QuartzJobBean {
     private final static ThreadPoolExecutor EXECUTOR = ThreadPoolExecutorUtil.getPoll();
 
     @Override
-    @SuppressWarnings("unchecked")
     public void executeInternal(JobExecutionContext context) {
         QuartzJob quartzJob = (QuartzJob) context.getMergedJobDataMap().get(QuartzJob.JOB_KEY);
         // 获取spring bean
