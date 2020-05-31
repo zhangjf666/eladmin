@@ -13,25 +13,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package me.zhengjie.utils;
+package me.zhengjie.config;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
- * 异常工具 2019-01-06
  * @author Zheng Jie
- */
-public class ThrowableUtil {
+ * @website https://el-admin.vip
+ * @description
+ * @date 2020-05-18
+ **/
+@Data
+@Component
+public class RsaProperties {
 
-    /**
-     * 获取堆栈信息
-     */
-    public static String getStackTrace(Throwable throwable){
-        StringWriter sw = new StringWriter();
-        try (PrintWriter pw = new PrintWriter(sw)) {
-            throwable.printStackTrace(pw);
-            return sw.toString();
-        }
+    public static String privateKey;
+
+    @Value("${rsa.private_key}")
+    public void setPrivateKey(String privateKey) {
+        RsaProperties.privateKey = privateKey;
     }
 }

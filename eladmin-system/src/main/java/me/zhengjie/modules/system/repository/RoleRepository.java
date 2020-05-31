@@ -26,7 +26,6 @@ import java.util.Set;
  * @author Zheng Jie
  * @date 2018-12-03
  */
-@SuppressWarnings("all")
 public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificationExecutor<Role> {
 
     /**
@@ -37,11 +36,19 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
     Role findByName(String name);
 
     /**
+     * 删除多个角色
+     * @param ids /
+     */
+    void deleteAllByIdIn(Set<Long> ids);
+
+    /**
      * 根据用户ID查询
      * @param id 用户ID
-     * @return
+     * @return /
      */
-    Set<Role> findByUsers_Id(Long id);
+    @Query(value = "SELECT r.* FROM sys_role r, sys_users_roles u WHERE " +
+            "r.role_id = u.role_id AND u.user_id = ?1",nativeQuery = true)
+    Set<Role> findByUserId(Long id);
 
     /**
      * 解绑角色菜单
@@ -50,4 +57,13 @@ public interface RoleRepository extends JpaRepository<Role, Long>, JpaSpecificat
     @Modifying
     @Query(value = "delete from sys_roles_menus where menu_id = ?1",nativeQuery = true)
     void untiedMenu(Long id);
+
+    /**
+     * 根据部门查询
+     * @param deptIds /
+     * @return /
+     */
+    @Query(value = "select count(1) from sys_role r, sys_roles_depts d where " +
+            "r.role_id = d.role_id and d.dept_id in ?1",nativeQuery = true)
+    int countByDepts(Set<Long> deptIds);
 }

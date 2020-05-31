@@ -31,15 +31,11 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Zheng Jie
@@ -47,7 +43,6 @@ import java.util.Map;
  */
 @Service
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
 public class LogServiceImpl implements LogService {
 
     private final LogRepository logRepository;
@@ -88,13 +83,10 @@ public class LogServiceImpl implements LogService {
 
         StringBuilder params = new StringBuilder("{");
         //参数值
-        Object[] argValues = joinPoint.getArgs();
+        List<Object> argValues = new ArrayList<>(Arrays.asList(joinPoint.getArgs()));
         //参数名称
-        String[] argNames = ((MethodSignature)joinPoint.getSignature()).getParameterNames();
-        if(argValues != null){
-            for (int i = 0; i < argValues.length; i++) {
-                params.append(" ").append(argNames[i]).append(": ").append(argValues[i]);
-            }
+        for (Object argValue : argValues) {
+            params.append(argValue).append(" ");
         }
         // 描述
         if (log != null) {
@@ -106,8 +98,7 @@ public class LogServiceImpl implements LogService {
         String loginPath = "login";
         if(loginPath.equals(signature.getName())){
             try {
-                assert argValues != null;
-                username = new JSONObject(argValues[0]).get("username").toString();
+                username = new JSONObject(argValues.get(0)).get("username").toString();
             }catch (Exception e){
                 e.printStackTrace();
             }
