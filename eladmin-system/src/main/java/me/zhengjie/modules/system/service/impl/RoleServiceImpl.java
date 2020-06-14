@@ -78,8 +78,8 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @Transactional
     @Cacheable(key = "'id:' + #p0")
+    @Transactional(rollbackFor = Exception.class)
     public RoleDto findById(long id) {
         Role role = roleRepository.findById(id).orElseGet(Role::new);
         ValidationUtil.isNull(role.getId(),"Role","id",id);
@@ -119,13 +119,13 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void updateMenu(Role resources, RoleDto roleDTO) {
         Role role = roleMapper.toEntity(roleDTO);
-        // 清理缓存
         List<User> users = userRepository.findByRoleId(role.getId());
         Set<Long> userIds = users.stream().map(User::getId).collect(Collectors.toSet());
-        redisUtils.delByKeys("menu::user:",userIds);
-        redisUtils.del("role::id:" + resources.getId());
         // 更新菜单
         role.setMenus(resources.getMenus());
+        // 清理缓存
+        redisUtils.delByKeys("menu::user:",userIds);
+        redisUtils.del("role::id:" + resources.getId());
         roleRepository.save(role);
     }
 
@@ -209,5 +209,10 @@ public class RoleServiceImpl implements RoleService {
         if(userRepository.countByRoles(ids) > 0){
             throw new BadRequestException("所选角色存在用户关联，请解除关联再试！");
         }
+    }
+
+    @Override
+    public List<Role> findInMenuId(List<Long> menuIds) {
+        return roleRepository.findInMenuId(menuIds);
     }
 }

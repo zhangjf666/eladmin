@@ -68,8 +68,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     @Cacheable(key = "'id:' + #p0")
+    @Transactional(rollbackFor = Exception.class)
     public UserDto findById(long id) {
         User user = userRepository.findById(id).orElseGet(User::new);
         ValidationUtil.isNull(user.getId(),"User","id",id);
@@ -108,6 +108,10 @@ public class UserServiceImpl implements UserService {
             redisUtils.del("data::user:" + resources.getId());
             redisUtils.del("menu::user:" + resources.getId());
             redisUtils.del("role::auth:" + resources.getId());
+        }
+        // 如果用户名称修改
+        if(!resources.getUsername().equals(user.getUsername())){
+            redisUtils.del("user::username:" + user.getUsername());
         }
         user.setUsername(resources.getUsername());
         user.setEmail(resources.getEmail());
@@ -177,7 +181,7 @@ public class UserServiceImpl implements UserService {
             FileUtil.del(oldPath);
         }
         redisUtils.del("user::username:" + user.getUsername());
-        return new HashMap<String,String>(){{put("avatar",file.getName());}};
+        return new HashMap<String,String>(1){{put("avatar",file.getName());}};
     }
 
     @Override
